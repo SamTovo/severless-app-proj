@@ -22,7 +22,7 @@ jobs:
 
     - name: Sync S3 bucket
       run: |
-        zip -r chat_lambda.zip ./lambda/
-        aws s3 cp chat_lambda.zip s3://${{ secrets.S3_BUCKET_LAMBDA }}/chat_lambda.zipc
+        zip -r chat_lambda.zip ./lambda/function/
+        aws s3 sync ./lambda/ s3://${{ secrets.S3_BUCKET_LAMBDA }} --delete
 
       
