@@ -3,7 +3,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 s3_client = boto3.client('s3')
-
+#testando hash
 bucket = '311141525611-severless-app-proj-static-site'
 
 def handler(event, context):
