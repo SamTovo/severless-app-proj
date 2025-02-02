@@ -23,7 +23,7 @@ jobs:
     - name: Sync S3 bucket
       run: |
         aws s3 sync ./lambda/ s3://${{ secrets.S3_BUCKET_LAMBDA }} --delete
-        cd lambda/function/
+        cd lambda/
         zip -r chat_lambda.zip chat_lambda.py
         aws s3 cp chat_lambda.zip s3://${{ secrets.S3_BUCKET_LAMBDA }}/chat_lambda.zip --metadata hash="$(shell openssl dgst -binary -sha256 $(ZIP_NAME) | openssl base64)"
 
