@@ -2,10 +2,16 @@
     "Version": "2012-10-17",
     "Statement": [
       {
-        "Sid": "VisualEditor0",
+        "Sid": "BucketAccess",
         "Effect": "Allow",
         "Action": "s3:GetObject",
-        "Resource": "arn:aws:s3:::${bucket_name}/*"
-      }
+        "Resource": "*"
+      },
+      {
+        "Sid": "LayerAccess",
+        "Effect": "Allow",
+        "Action": "lambda:PublishLayerVersion",
+        "Resource": "*"
+    }
     ]
 }

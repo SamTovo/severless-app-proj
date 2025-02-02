@@ -1,3 +1,5 @@
+
+
 resource "aws_lambda_function" "chat_lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
