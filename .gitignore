@@ -1,0 +1,9 @@
+**/*terraform*/
+**/*terraform*
+infra/.terraform/*
+infra/.terraform
+~/infra/.terraform/*
+
+severless-app-proj\infra\.terraform/.
+.txt
+.exe
