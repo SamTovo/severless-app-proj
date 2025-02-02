@@ -1,4 +1,9 @@
 
+data "aws_s3_object" "package" {
+  bucket = aws_s3_bucket.lambda.bucket
+  key    = "chat_lambda.zip"
+}
+
 
 resource "aws_lambda_function" "chat_lambda" {
   # If the file is not in the current working directory you will need to include a
@@ -9,4 +14,6 @@ resource "aws_lambda_function" "chat_lambda" {
   s3_key    = "chat_lambda.zip"
   handler = "chat_lambda.lambda_handler"
   runtime = "python3.8"
+  source_code_hash = data.aws_s3_object.package.metadata.hash
+
 }
