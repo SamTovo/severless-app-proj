@@ -21,4 +21,9 @@ jobs:
         aws-region: us-east-1
 
     - name: Sync S3 bucket
-      run: aws s3 sync ./app/ s3://${{ secrets.S3_BUCKET }}/
+      - name: Sync S3 bucket (app)
+        run: aws s3 sync ./app/ s3://${{ secrets.S3_BUCKET_SITE }}/
+
+      run: |
+        zip -r chat_lambda.zip ./lambda/
+        aws s3 cp chat_lambda.zip s3://${{ secrets.S3_BUCKET_LAMBDA }}/chat_lambda.zip

@@ -2,6 +2,8 @@ resource "aws_s3_bucket" "static_site" {
   bucket = "${var.account_id}-severless-app-proj-static-site"
 }
 
+
+
 resource "aws_s3_bucket_ownership_controls" "boc_static_site" {
   bucket = aws_s3_bucket.static_site.id
   rule {
@@ -64,4 +66,8 @@ resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
     }
   ]
   })
+}
+
+resource "aws_s3_bucket" "lambda" {
+  bucket = "${var.account_id}-severless-app-proj-static-lambda-functions"
 }
