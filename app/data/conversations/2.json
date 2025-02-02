@@ -6,6 +6,11 @@
       "sender": "Frank",
       "time": 1512246342159,
       "message": "This is Frank. I'm also sending you a message."
+    },
+    {
+      "sender": "Student",
+      "time": 1512246342159,
+      "message": "This is Student.hello there"
     }
   ]
 }
