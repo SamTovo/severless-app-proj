@@ -1,7 +1,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-
+import time
 dynamodb = boto3.resource('dynamodb')
 client = boto3.client('dynamodb')
 
@@ -38,7 +38,7 @@ def handler(event, context):
             if event['httpMethod'] == 'GET':
                 return done(None, load_messages(id))
             elif event['httpMethod'] == 'POST':
-                table = dynamodb.Table('Chat-Messages')
+                table = dynamodb.Table('Ch at-Messages')
                 response = table.put_item(
                     Item={
                         'ConversationId': id,
