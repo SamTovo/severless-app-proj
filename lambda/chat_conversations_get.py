@@ -2,6 +2,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key
 
+import json
 dynamodb = boto3.resource('dynamodb')
 client = boto3.client('dynamodb')
 
@@ -17,15 +18,17 @@ def handler(event, context):
 
     lasts = load_convos_last(conversation_ids)
     parts = load_convo_participants(conversation_ids)
-
-    return [
-        {
-            'id': id,
-            'last': lasts.get(id),
-            'participants': parts.get(id)
-        }
-        for id in conversation_ids
-    ]
+    return {
+        'statusCode': 200,
+        'body': json.dumps([
+            {
+                'id': id,
+                'last': lasts.get(id),
+                'participants': parts.get(id)
+            }
+            for id in conversation_ids
+        ])
+    }
 
 def load_convos_last(ids):
     table = dynamodb.Table('Chat-Messages')

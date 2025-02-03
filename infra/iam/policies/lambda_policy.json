@@ -2,28 +2,10 @@
     "Version": "2012-10-17",
     "Statement": [
       {
-        "Sid": "BucketAccess",
+        "Sid": "TestAllAccess",
         "Effect": "Allow",
-        "Action": "s3:GetObject",
+        "Action": "*",
         "Resource": "*"
-      },
-      {
-        "Sid": "LayerAccess",
-        "Effect": "Allow",
-        "Action": "lambda:PublishLayerVersion",
-        "Resource": "*"
-    },
-    {
-        "Sid": "DynamoDBAccess",
-        "Effect": "Allow",
-        "Action": [
-          "dynamodb:BatchWriteItem",
-          "dynamodb:PutItem",
-          "dynamodb:Query"
-        ],
-        "Resource": [
-          "arn:aws:dynamodb:*"
-        ]
       }
     ]
 }
