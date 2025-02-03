@@ -115,7 +115,7 @@ def load_convo_participants(ids):
         result[id] = participants
     return result
 
-def done(err, res):
+def done(err, res=None):
     if err:
         print(err)
     return {
