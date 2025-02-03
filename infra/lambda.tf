@@ -13,7 +13,7 @@ resource "aws_s3_object" "file_upload" {
   bucket = aws_s3_bucket.lambda.bucket
   key    = "chat_lambda.zip"
   source = data.archive_file.lambda_file.output_path
-  etag   = "${filemd5(data.archive_file.lambda_file.output_path)}"
+  etag   = filemd5(data.archive_file.lambda_file.output_path)
 }
 resource "aws_lambda_function" "chat_lambda" {
   # If the file is not in the current working directory you will need to include a

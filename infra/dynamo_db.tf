@@ -5,7 +5,7 @@ resource "aws_dynamodb_table" "chat_messages" {
   write_capacity = 1
   hash_key       = "ConversationId"
   range_key      = "Timestamp"
- attribute {
+  attribute {
     name = "ConversationId"
     type = "S"
   }
@@ -27,7 +27,7 @@ resource "aws_dynamodb_table" "chat_conversations" {
   write_capacity = 1
   hash_key       = "ConversationId"
   range_key      = "Username"
- attribute {
+  attribute {
     name = "ConversationId"
     type = "S"
   }
@@ -41,12 +41,12 @@ resource "aws_dynamodb_table" "chat_conversations" {
     Environment = "production"
   }
 
-    global_secondary_index {
-    name               = "Username-ConversationId-index"
-    hash_key           = "Username"
-    range_key          = "ConversationId"
-    write_capacity     = 1
-    read_capacity      = 1
-    projection_type    = "ALL"
+  global_secondary_index {
+    name            = "Username-ConversationId-index"
+    hash_key        = "Username"
+    range_key       = "ConversationId"
+    write_capacity  = 1
+    read_capacity   = 1
+    projection_type = "ALL"
   }
 }
