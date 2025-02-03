@@ -1,6 +1,8 @@
 import boto3
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
+dynamodb = boto3.resource('dynamodb')
 client = boto3.client('dynamodb')
 
 def handler(event, context):
@@ -8,18 +10,15 @@ def handler(event, context):
 
     try:
         if path == 'conversations':
-            paginator = client.get_paginator('query')
-            response_iterator = paginator.paginate(
-                TableName='Chat-Conversations',
-                IndexName='Username-ConversationId-index',
-                Select='ALL_PROJECTED_ATTRIBUTES',
-                KeyConditionExpression=Key('Username').eq('Student')
-            )
-
             conversation_ids = []
-            for page in response_iterator:
-                for item in page['Items']:
-                    conversation_ids.append(item['ConversationId']['S'])
+            table = dynamodb.Table('Chat-Conversations')
+            response = table.query(
+                IndexName='Username-ConversationId-index',
+                KeyConditionExpression=Key('Username').eq('Student'),
+                ProjectionExpression='ConversationId'
+            )
+            for item in response['Items']:
+                conversation_ids.append(item['ConversationId'])
 
             lasts = load_convos_last(conversation_ids)
             parts = load_convo_participants(conversation_ids)
@@ -36,45 +35,50 @@ def handler(event, context):
         elif path.startswith('conversations/'):
             id = path[len('conversations/'):]
 
-            return done(None, load_messages(id))
+            if event['httpMethod'] == 'GET':
+                return done(None, load_messages(id))
+            elif event['httpMethod'] == 'POST':
+                table = dynamodb.Table('Ch at-Messages')
+                response = table.put_item(
+                    Item={
+                        'ConversationId': id,
+                        'Timestamp': int(time.time()),
+                        'Message': event['body'],
+                        'Sender': 'Student'
+                    }
+                )
+                return done(None, response)
+            else:
+                return done('No cases hit')
         else:
             return done('No cases hit')
-    except Exception as e:
+    except ClientError as e:
         return done(e)
 
 def load_messages(id):
     messages = []
-    paginator = client.get_paginator('query')
-    response_iterator = paginator.paginate(
-        TableName='Chat-Messages',
+    table = dynamodb.Table('Chat-Messages')
+    response = table.query(
+        KeyConditionExpression=Key('ConversationId').eq(id),
         ProjectionExpression='#T, Sender, Message',
-        ExpressionAttributeNames={'#T': 'Timestamp'},
-        KeyConditionExpression=Key('ConversationId').eq(id)
+        ExpressionAttributeNames={'#T': 'Timestamp'}
     )
-
-    for page in response_iterator:
-        for message in page['Items']:
-            messages.append({
-                'sender': message['Sender']['S'],
-                'time': int(message['Timestamp']['N']),
-                'message': message['Message']['S']
-            })
-
+    for item in response['Items']:
+        messages.append({
+            'sender': item['Sender'],
+            'time': item['Timestamp'],
+            'message': item['Message']
+        })
     return load_conversation_detail(id, messages)
 
 def load_conversation_detail(id, messages):
-    paginator = client.get_paginator('query')
-    response_iterator = paginator.paginate(
-        TableName='Chat-Conversations',
-        Select='ALL_ATTRIBUTES',
+    participants = []
+    table = dynamodb.Table('Chat-Conversations')
+    response = table.query(
         KeyConditionExpression=Key('ConversationId').eq(id)
     )
-
-    participants = []
-
-    for page in response_iterator:
-        for item in page['Items']:
-            participants.append(item['Username']['S'])
+    for item in response['Items']:
+        participants.append(item['Username'])
 
     return {
         'id': id,
@@ -84,42 +88,31 @@ def load_conversation_detail(id, messages):
     }
 
 def load_convos_last(ids):
-    query_results = [
-        client.query(
-            TableName='Chat-Messages',
-            ProjectionExpression='ConversationId, #T',
-            Limit=1,
-            ScanIndexForward=False,
-            KeyConditionExpression=Key('ConversationId').eq(id),
-            ExpressionAttributeNames={'#T': 'Timestamp'}
-        )
-        for id in ids
-    ]
-
     result = {}
-
-    for qr in query_results:
-        if qr['Items']:
-            result[qr['Items'][0]['ConversationId']['S']] = int(qr['Items'][0]['Timestamp']['N'])
-
+    for id in ids:
+        table = dynamodb.Table('Chat-Messages')
+        response = table.query(
+            KeyConditionExpression=Key('ConversationId').eq(id),
+            ProjectionExpression='ConversationId, #T',
+            ExpressionAttributeNames={'#T': 'Timestamp'},
+            Limit=1,
+            ScanIndexForward=False
+        )
+        if response['Items']:
+            result[id] = response['Items'][0]['Timestamp']
     return result
 
 def load_convo_participants(ids):
-    query_results = [
-        client.query(
-            TableName='Chat-Conversations',
-            Select='ALL_ATTRIBUTES',
+    result = {}
+    for id in ids:
+        participants = []
+        table = dynamodb.Table('Chat-Conversations')
+        response = table.query(
             KeyConditionExpression=Key('ConversationId').eq(id)
         )
-        for id in ids
-    ]
-
-    result = {}
-
-    for qr in query_results:
-        participants = [item['Username']['S'] for item in qr['Items']]
-        result[qr['Items'][0]['ConversationId']['S']] = participants
-
+        for item in response['Items']:
+            participants.append(item['Username'])
+        result[id] = participants
     return result
 
 def done(err, res):
@@ -127,10 +120,9 @@ def done(err, res):
         print(err)
     return {
         'statusCode': '400' if err else '200',
-        'body': str(err) if err else str(res),
+        'body': json.dumps(err) if err else json.dumps(res),
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         }
     }
-#function end
