@@ -3,7 +3,7 @@ resource "aws_api_gateway_rest_api" "api" {
   description = "This is my API Gateway"
 }
 
-resource "aws_api_gateway_resource" "conversations_resource" {
+resource "aws_api_gateway_resource" "resource" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
   path_part   = "conversations"
@@ -21,6 +21,12 @@ resource "aws_api_gateway_method" "method" {
   authorization = "NONE"
 }
 
+resource "aws_api_gateway_method" "method_id" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.id_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -34,7 +40,7 @@ resource "aws_api_gateway_integration" "integration" {
   resource_id             = aws_api_gateway_resource.resource.id
   http_method             = aws_api_gateway_method.method.http_method
   type                    = "AWS_PROXY"
-  integration_http_method = "POST"
+  integration_http_method = "GET"
   uri                     = aws_lambda_function.chat_lambda.invoke_arn
 }
 
