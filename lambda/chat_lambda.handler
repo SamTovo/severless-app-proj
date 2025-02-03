@@ -1,53 +1,80 @@
-import json
 import boto3
 from boto3.dynamodb.conditions import Key
 
-s3_client = boto3.client('s3')
-dynamodb = boto3.resource('dynamodb')
-
-bucket = '311141525611-severless-app-proj-static-site'
+client = boto3.client('dynamodb')
 
 def handler(event, context):
     path = event['pathParameters']['proxy']
 
     try:
         if path == 'conversations':
-            response = s3_client.get_object(Bucket=bucket, Key='data/conversations.json')
-            return done(None, json.loads(response['Body'].read().decode('utf-8')))
+            paginator = client.get_paginator('query')
+            response_iterator = paginator.paginate(
+                TableName='Chat-Conversations',
+                IndexName='Username-ConversationId-index',
+                Select='ALL_PROJECTED_ATTRIBUTES',
+                KeyConditionExpression=Key('Username').eq('Student')
+            )
+
+            conversation_ids = []
+            for page in response_iterator:
+                for item in page['Items']:
+                    conversation_ids.append(item['ConversationId']['S'])
+
+            lasts = load_convos_last(conversation_ids)
+            parts = load_convo_participants(conversation_ids)
+
+            result_objs = [
+                {
+                    'id': id,
+                    'last': lasts.get(id),
+                    'participants': parts.get(id)
+                }
+                for id in conversation_ids
+            ]
+            return done(None, result_objs)
         elif path.startswith('conversations/'):
             id = path[len('conversations/'):]
+
             return done(None, load_messages(id))
         else:
             return done('No cases hit')
     except Exception as e:
-        return done(str(e))
+        return done(e)
 
 def load_messages(id):
-    table = dynamodb.Table('Chat-Messages')
-    response = table.query(
-        KeyConditionExpression=Key('ConversationId').eq(id),
+    messages = []
+    paginator = client.get_paginator('query')
+    response_iterator = paginator.paginate(
+        TableName='Chat-Messages',
         ProjectionExpression='#T, Sender, Message',
-        ExpressionAttributeNames={'#T': 'Timestamp'}
+        ExpressionAttributeNames={'#T': 'Timestamp'},
+        KeyConditionExpression=Key('ConversationId').eq(id)
     )
 
-    messages = []
-    for item in response['Items']:
-        messages.append({
-            'sender': item['Sender'],
-            'time': int(item['Timestamp']),
-            'message': item['Message']
-        })
+    for page in response_iterator:
+        for message in page['Items']:
+            messages.append({
+                'sender': message['Sender']['S'],
+                'time': int(message['Timestamp']['N']),
+                'message': message['Message']['S']
+            })
 
     return load_conversation_detail(id, messages)
 
 def load_conversation_detail(id, messages):
-    table = dynamodb.Table('Chat-Conversations')
-    response = table.query(
-        KeyConditionExpression=Key('ConversationId').eq(id),
-        Select='ALL_ATTRIBUTES'
+    paginator = client.get_paginator('query')
+    response_iterator = paginator.paginate(
+        TableName='Chat-Conversations',
+        Select='ALL_ATTRIBUTES',
+        KeyConditionExpression=Key('ConversationId').eq(id)
     )
 
-    participants = [item['Username'] for item in response['Items']]
+    participants = []
+
+    for page in response_iterator:
+        for item in page['Items']:
+            participants.append(item['Username']['S'])
 
     return {
         'id': id,
@@ -56,12 +83,51 @@ def load_conversation_detail(id, messages):
         'messages': messages
     }
 
-def done(err, res=None):
+def load_convos_last(ids):
+    query_results = [
+        client.query(
+            TableName='Chat-Messages',
+            ProjectionExpression='ConversationId, #T',
+            Limit=1,
+            ScanIndexForward=False,
+            KeyConditionExpression=Key('ConversationId').eq(id),
+            ExpressionAttributeNames={'#T': 'Timestamp'}
+        )
+        for id in ids
+    ]
+
+    result = {}
+
+    for qr in query_results:
+        if qr['Items']:
+            result[qr['Items'][0]['ConversationId']['S']] = int(qr['Items'][0]['Timestamp']['N'])
+
+    return result
+
+def load_convo_participants(ids):
+    query_results = [
+        client.query(
+            TableName='Chat-Conversations',
+            Select='ALL_ATTRIBUTES',
+            KeyConditionExpression=Key('ConversationId').eq(id)
+        )
+        for id in ids
+    ]
+
+    result = {}
+
+    for qr in query_results:
+        participants = [item['Username']['S'] for item in qr['Items']]
+        result[qr['Items'][0]['ConversationId']['S']] = participants
+
+    return result
+
+def done(err, res):
     if err:
         print(err)
     return {
         'statusCode': '400' if err else '200',
-        'body': json.dumps(err) if err else json.dumps(res),
+        'body': str(err) if err else str(res),
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
