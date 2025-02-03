@@ -121,7 +121,7 @@ def done(err, res=None):
         print(err)
     return {
         'statusCode': '400' if err else '200',
-        'body': json.dumps(err) if err else json.dumps(res),
+        'body': err if err else res,
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'

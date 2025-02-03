@@ -17,6 +17,7 @@ resource "aws_dynamodb_table" "chat_messages" {
   tags = {
     Name        = "dynamodb-table-1"
     Environment = "production"
+    Version     = "1.1"
   }
 }
 
