@@ -12,6 +12,18 @@
         "Effect": "Allow",
         "Action": "lambda:PublishLayerVersion",
         "Resource": "*"
-    }
+    },
+    {
+        "Sid": "DynamoDBAccess",
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query"
+        ],
+        "Resource": [
+          "arn:aws:dynamodb:*"
+        ]
+      }
     ]
 }
