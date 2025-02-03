@@ -2,6 +2,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 import time
+import json
 dynamodb = boto3.resource('dynamodb')
 client = boto3.client('dynamodb')
 
@@ -36,9 +37,9 @@ def handler(event, context):
             id = path[len('conversations/'):]
 
             if event['httpMethod'] == 'GET':
-                return done(None, load_messages(id))
+                    return done(None, load_messages(id))
             elif event['httpMethod'] == 'POST':
-                table = dynamodb.Table('Ch at-Messages')
+                table = dynamodb.Table('Chat-Messages')
                 response = table.put_item(
                     Item={
                         'ConversationId': id,
@@ -53,7 +54,7 @@ def handler(event, context):
         else:
             return done('No cases hit')
     except ClientError as e:
-        return done(e)
+        return done(str(e))
 
 def load_messages(id):
     messages = []
