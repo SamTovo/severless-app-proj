@@ -11,10 +11,7 @@ def handler(event, context):
     response = table.query(
         IndexName='Username-ConversationId-index',
         Select='ALL_PROJECTED_ATTRIBUTES',
-        KeyConditionExpression=Key('Username').eq(':username'),
-        ExpressionAttributeValues={':username': event.cognitoUsername}
-    )
-
+        KeyConditionExpression=Key('Username').eq(event["cognitoUsername"])    )
     conversation_ids = [item['ConversationId'] for item in response['Items']]
 
     lasts = load_convos_last(conversation_ids)
