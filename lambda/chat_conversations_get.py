@@ -11,7 +11,8 @@ def handler(event, context):
     response = table.query(
         IndexName='Username-ConversationId-index',
         Select='ALL_PROJECTED_ATTRIBUTES',
-        KeyConditionExpression=Key('Username').eq('Student')
+        KeyConditionExpression=Key('Username').eq(':username'),
+        ExpressionAttributeValues={':username': event.cognitoUsername}
     )
 
     conversation_ids = [item['ConversationId'] for item in response['Items']]
