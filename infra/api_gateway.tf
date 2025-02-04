@@ -49,7 +49,7 @@ resource "aws_lambda_permission" "api_gateway_get_ids" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.chat_messages_get.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/conversations"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/conversations/{id}"
 }
 
 resource "aws_lambda_permission" "api_gateway_post_ids" {
@@ -57,7 +57,7 @@ resource "aws_lambda_permission" "api_gateway_post_ids" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.messages_post_lambda.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/POST/conversations"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/POST/conversations/{id}"
 }
 
 resource "aws_api_gateway_integration" "lambda" {
@@ -76,6 +76,11 @@ resource "aws_api_gateway_integration" "lambda_get_ids" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.chat_messages_get.invoke_arn
+
+  request_templates = {
+    "application/json" = ""
+    "application/xml"  = file("${path.module}/mapping_templates/Chat-Messages-GET-Input.vtl")
+  }
 }
 
 resource "aws_api_gateway_integration" "lambda_post_ids" {
@@ -85,6 +90,10 @@ resource "aws_api_gateway_integration" "lambda_post_ids" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.messages_post_lambda.invoke_arn
+    request_templates = {
+    "application/json" = ""
+    "application/xml"  = file("${path.module}/mapping_templates/Chat-Messages-POST-Input.vtl")
+  }
 }
 
 
@@ -104,7 +113,7 @@ resource "aws_api_gateway_model" "conversation" {
 
 resource "aws_api_gateway_model" "new_message" {
   rest_api_id  = aws_api_gateway_rest_api.api.id
-  name         = "Conversation"
+  name         = "NewMessage"
   content_type = "application/json"
   schema       = file("${path.module}/models/NewMessage.json")
 }
