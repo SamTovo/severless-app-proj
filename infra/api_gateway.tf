@@ -22,12 +22,42 @@ resource "aws_api_gateway_method" "get_conversations" {
 }
 
 
+resource "aws_api_gateway_method" "get_ids" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.conversations_id_api.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "post_ids" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.conversations_id_api.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.chat_conversation_lambda_convo.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/conversations"
+}
+
+resource "aws_lambda_permission" "api_gateway_get_ids" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.chat_messages_get.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/conversations"
+}
+
+resource "aws_lambda_permission" "api_gateway_post_ids" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.messages_post_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/POST/conversations"
 }
 
 resource "aws_api_gateway_integration" "lambda" {
@@ -38,12 +68,47 @@ resource "aws_api_gateway_integration" "lambda" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.chat_conversation_lambda_convo.invoke_arn
 }
+
+resource "aws_api_gateway_integration" "lambda_get_ids" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.conversations_id_api.id
+  http_method             = aws_api_gateway_method.get_ids.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.chat_messages_get.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "lambda_post_ids" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.conversations_id_api.id
+  http_method             = aws_api_gateway_method.post_ids.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.messages_post_lambda.invoke_arn
+}
+
+
 resource "aws_api_gateway_model" "conversation_list" {
   rest_api_id  = aws_api_gateway_rest_api.api.id
   name         = "ConversationList"
   content_type = "application/json"
   schema       = file("${path.module}/models/Conversationlist.json")
 }
+
+resource "aws_api_gateway_model" "conversation" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "Conversation"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/Conversation.json")
+}
+
+resource "aws_api_gateway_model" "new_message" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "Conversation"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/NewMessage.json")
+}
+
 
 resource "aws_api_gateway_method_response" "method_response_200" {
   rest_api_id = aws_api_gateway_rest_api.api.id

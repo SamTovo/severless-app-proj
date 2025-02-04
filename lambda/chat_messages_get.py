@@ -37,10 +37,12 @@ def load_conversation_detail(id, messages):
     for page in response_iterator:
         for item in page['Items']:
             participants.append(item['Username']['S'])
-
+ 
     return {
-        'id': id,
-        'participants': participants,
-        'last': messages[-1]['time'] if messages else None,
-        'messages': messages
+        'statusCode': 200,
+        'body': json.dumps({
+            'id': id,
+            'participants': participants,
+            'last': messages[-1]['time'] if messages else None,
+            'messages': messages})
     }
