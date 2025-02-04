@@ -65,8 +65,13 @@ resource "aws_api_gateway_integration" "lambda" {
   resource_id             = aws_api_gateway_resource.conversations_api.id
   http_method             = aws_api_gateway_method.get_conversations.http_method
   integration_http_method = "POST"
-  type                    = "AWS_PROXY"
+  type                    = "AWS"
   uri                     = aws_lambda_function.chat_conversation_lambda_convo.invoke_arn
+
+  request_templates = {
+    "application/json" = file("${path.module}/mapping_templates/Chat-Conversation-GET-Input.vtl")
+  }
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
 }
 
 resource "aws_api_gateway_integration" "lambda_get_ids" {

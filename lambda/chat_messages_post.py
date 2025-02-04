@@ -11,7 +11,7 @@ def handler(event, context):
             'ConversationId': event['id'],
             'Timestamp': str(int(time.time() * 1000)),
             'Message': event['message'],
-            'Sender': 'Student'
+            'Sender': event['cognitoUsername']
         }
     )
     return response
