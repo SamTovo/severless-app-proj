@@ -12,7 +12,7 @@ resource "aws_dynamodb_table" "chat_messages" {
 
   attribute {
     name = "Timestamp"
-    type = "N"
+    type = "S"
   }
   tags = {
     Name        = "dynamodb-table-1"

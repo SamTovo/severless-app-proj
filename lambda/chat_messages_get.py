@@ -17,7 +17,7 @@ def handler(event, context):
         for message in page['Items']:
             messages.append({
                 'sender': message['Sender']['S'],
-                'time': int(message['Timestamp']['N']),
+                'time': int(message['Timestamp']['S']),
                 'message': message['Message']['S']
             })
 

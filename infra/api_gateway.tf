@@ -74,13 +74,13 @@ resource "aws_api_gateway_integration" "lambda_get_ids" {
   resource_id             = aws_api_gateway_resource.conversations_id_api.id
   http_method             = aws_api_gateway_method.get_ids.http_method
   integration_http_method = "POST"
-  type                    = "AWS_PROXY"
+  type                    = "AWS"
   uri                     = aws_lambda_function.chat_messages_get.invoke_arn
 
   request_templates = {
-    "application/json" = ""
-    "application/xml"  = file("${path.module}/mapping_templates/Chat-Messages-GET-Input.vtl")
+    "application/json" = file("${path.module}/mapping_templates/Chat-Messages-GET-Input.vtl")
   }
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
 }
 
 resource "aws_api_gateway_integration" "lambda_post_ids" {
@@ -88,12 +88,12 @@ resource "aws_api_gateway_integration" "lambda_post_ids" {
   resource_id             = aws_api_gateway_resource.conversations_id_api.id
   http_method             = aws_api_gateway_method.post_ids.http_method
   integration_http_method = "POST"
-  type                    = "AWS_PROXY"
+  type                    = "AWS"
   uri                     = aws_lambda_function.messages_post_lambda.invoke_arn
     request_templates = {
-    "application/json" = ""
-    "application/xml"  = file("${path.module}/mapping_templates/Chat-Messages-POST-Input.vtl")
+    "application/json" = file("${path.module}/mapping_templates/Chat-Messages-POST-Input.vtl")
   }
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
 }
 
 
@@ -142,6 +142,60 @@ resource "aws_api_gateway_integration_response" "integration_response_200" {
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 }
+
+
+resource "aws_api_gateway_method_response" "method_response_200_id_get" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.conversations_id_api.id
+  http_method = aws_api_gateway_method.get_ids.http_method
+  status_code = "200"
+  response_models = {
+    "application/json" = aws_api_gateway_model.conversation.name
+  }
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "integration_response_200_id_get" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.conversations_id_api.id
+  http_method = aws_api_gateway_method.get_ids.http_method
+  status_code = aws_api_gateway_method_response.method_response_200_id_get.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+
+resource "aws_api_gateway_method_response" "method_response_204_id_post" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.conversations_id_api.id
+  http_method = aws_api_gateway_method.post_ids.http_method
+  status_code = "204"
+  response_models = {
+    "application/json" = aws_api_gateway_model.new_message.name
+  }
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "integration_response_204_id_post" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.conversations_id_api.id
+  http_method = aws_api_gateway_method.post_ids.http_method
+  status_code = aws_api_gateway_method_response.method_response_204_id_post.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+
+
+
 
 resource "aws_api_gateway_method" "cors_options" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
