@@ -69,8 +69,8 @@ data "aws_s3_object" "package_post" {
 resource "aws_s3_object" "file_upload_post" {
   bucket = aws_s3_bucket.lambda.bucket
   key    = "chat_messages_post.zip"
-  source = data.archive_file.lambda_file_convo.output_path
-  etag   = filemd5(data.archive_file.lambda_file_convo.output_path)
+  source = data.archive_file.lambda_file_message_post.output_path
+  etag   = filemd5(data.archive_file.lambda_file_message_post.output_path)
 }
 
 
