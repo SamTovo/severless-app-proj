@@ -81,5 +81,5 @@ resource "aws_lambda_function" "messages_post_lambda" {
   s3_key           = "chat_messages_post.zip"
   handler          = "chat_messages_post.handler"
   runtime          = "python3.8"
-  source_code_hash = aws_s3_object.file_upload_convo.etag
+  source_code_hash = aws_s3_object.file_upload_post.etag
 }

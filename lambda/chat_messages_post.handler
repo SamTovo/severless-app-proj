@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('Chat-Messages')
 
-def lambda_handler(event, context):
+def handler(event, context):
     response = table.put_item(
         Item={
             'ConversationId': event['id'],
@@ -14,3 +14,4 @@ def lambda_handler(event, context):
         }
     )
     return response
+#teste2
