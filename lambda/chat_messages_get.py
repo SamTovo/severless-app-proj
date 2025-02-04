@@ -1,5 +1,5 @@
 import boto3
-
+import json
 dynamodb = boto3.client('dynamodb')
 
 def handler(event, context):
