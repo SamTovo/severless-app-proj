@@ -109,5 +109,5 @@ resource "aws_lambda_function" "user_get_lambda" {
   s3_key           = "chat_users_get.zip"
   handler          = "chat_users_get.handler"
   runtime          = "python3.8"
-  source_code_hash = aws_s3_object.package_user_get.etag
+  source_code_hash = aws_s3_object.file_upload_user_get.etag
 }
