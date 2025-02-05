@@ -83,3 +83,31 @@ resource "aws_lambda_function" "messages_post_lambda" {
   runtime          = "python3.8"
   source_code_hash = aws_s3_object.file_upload_post.etag
 }
+
+data "archive_file" "lambda_file_user_get" {
+  type        = "zip"
+  source_file = "../lambda/chat_users_get.py"
+  output_path = "../lambda/chat_users_get.zip"
+}
+data "aws_s3_object" "package_user_get" {
+  bucket = aws_s3_bucket.lambda.bucket
+  key    = "chat_users_get.zip"
+}
+
+resource "aws_s3_object" "file_upload_user_get" {
+  bucket = aws_s3_bucket.lambda.bucket
+  key    = "chat_users_get.zip"
+  source = data.archive_file.lambda_file_user_get.output_path
+  etag   = filemd5(data.archive_file.lambda_file_user_get.output_path)
+}
+
+
+resource "aws_lambda_function" "user_get_lambda" {
+  function_name    = "chat_users_get"
+  role             = aws_iam_role.lambda_role.arn
+  s3_bucket        = aws_s3_bucket.lambda.bucket
+  s3_key           = "chat_users_get.zip"
+  handler          = "chat_users_get.handler"
+  runtime          = "python3.8"
+  source_code_hash = aws_s3_object.package_user_get.etag
+}
