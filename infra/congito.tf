@@ -1,7 +1,7 @@
 resource "aws_cognito_user_pool" "pool" {
     name = "chatpool"
 
-    username_attributes = ["email"]
+    username_attributes = ["email", "username"]
     auto_verified_attributes = ["email"]
 
     mfa_configuration = "OFF"
