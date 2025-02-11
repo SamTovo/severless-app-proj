@@ -1,11 +1,10 @@
 resource "aws_cognito_user_pool" "pool" {
     name = "chatpool"
 
-    username_attributes = ["email", "username"]
     auto_verified_attributes = ["email"]
 
     mfa_configuration = "OFF"
-
+    alias_attributes = ["email","preferred_username"]
     account_recovery_setting {
         recovery_mechanism {
             name     = "verified_email"
