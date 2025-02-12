@@ -11,6 +11,7 @@ var ChatApp = window.ChatApp || {};
     ChatApp.populateChats = function () {
         apiClient.conversationsGet({}, null, {})
             .then(function (result) {
+                const response = JSON.parse(result.data.body);
                 response.forEach(function (convo) {
                     var otherUsers = [];
                     convo.participants.forEach(function (user) {
