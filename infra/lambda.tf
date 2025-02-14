@@ -56,6 +56,37 @@ resource "aws_lambda_function" "chat_conversation_lambda_convo" {
   source_code_hash = aws_s3_object.file_upload_convo.etag
 }
 
+data "archive_file" "lambda_file_convo_post" {
+  type        = "zip"
+  source_file = "../lambda/chat_conversations_post.py"
+  output_path = "../lambda/chat_conversations_post.zip"
+}
+
+data "aws_s3_object" "package_convo_post" {
+  bucket = aws_s3_bucket.lambda.bucket
+  key    = "chat_conversations_post.zip"
+}
+
+resource "aws_s3_object" "file_upload_convo_post" {
+  bucket = aws_s3_bucket.lambda.bucket
+  key    = "chat_conversations_post.zip"
+  source = data.archive_file.lambda_file_convo_post.output_path
+  etag   = filemd5(data.archive_file.lambda_file_convo_post.output_path)
+}
+
+
+resource "aws_lambda_function" "chat_conversation_lambda_convo_post" {
+  function_name    = "chat_conversation_lambda_post"
+  role             = aws_iam_role.lambda_role.arn
+  s3_bucket        = aws_s3_bucket.lambda.bucket
+  s3_key           = "chat_conversations_post.zip"
+  handler          = "chat_conversations_post.handler"
+  runtime          = "python3.8"
+  source_code_hash = aws_s3_object.file_upload_convo_post.etag
+}
+
+
+
 data "archive_file" "lambda_file_message_post" {
   type        = "zip"
   source_file = "../lambda/chat_messages_post.py"
