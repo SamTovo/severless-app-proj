@@ -1,3 +1,53 @@
+resource "aws_api_gateway_model" "conversation_list" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "ConversationList"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/Conversationlist.json")
+}
+
+resource "aws_api_gateway_model" "conversation" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "Conversation"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/Conversation.json")
+}
+
+resource "aws_api_gateway_model" "new_message" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "NewMessage"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/NewMessage.json")
+}
+
+resource "aws_api_gateway_model" "user_get" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "UserList"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/UserList.json")
+}
+
+resource "aws_api_gateway_model" "convo_id" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "ConversationId"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/ConversationId.json")
+}
+
+resource "aws_api_gateway_model" "new_convo" {
+  rest_api_id  = aws_api_gateway_rest_api.api.id
+  name         = "NewConversation"
+  content_type = "application/json"
+  schema       = file("${path.module}/models/NewConversation.json")
+}
+
+
+
+
+
+
+
+
+
 resource "aws_api_gateway_rest_api" "api" {
   name        = "ChatAPI"
   description = "This is my API Gateway"
@@ -46,6 +96,18 @@ resource "aws_api_gateway_method" "get_users" {
   http_method   = "GET"
   authorization = "NONE"
 }
+
+resource "aws_api_gateway_method" "post_conversations" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.conversations_api.id
+  http_method   = "POST"
+  authorization = "NONE"
+  request_models = {
+    "application/json" = aws_api_gateway_model.new_convo.name
+  }
+
+}
+
 
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
@@ -127,39 +189,24 @@ resource "aws_api_gateway_integration" "lambda_users_get" {
   integration_http_method = "POST"
   type                    = "AWS"
   uri                     = aws_lambda_function.user_get_lambda.invoke_arn
-  #   request_templates = {
-  #   "application/json" = file("${path.module}/mapping_templates/Chat-Messages-POST-Input.vtl")
-  # }
-  # passthrough_behavior = "WHEN_NO_TEMPLATES"
+
 }
 
-resource "aws_api_gateway_model" "conversation_list" {
-  rest_api_id  = aws_api_gateway_rest_api.api.id
-  name         = "ConversationList"
-  content_type = "application/json"
-  schema       = file("${path.module}/models/Conversationlist.json")
+resource "aws_api_gateway_integration" "lambda_convo_post" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.conversations_api.id
+  http_method             = aws_api_gateway_method.post_conversations.http_method
+  integration_http_method = "POST"
+  type                    = "AWS"
+  uri                     = aws_lambda_function.chat_conversation_lambda_convo_post.invoke_arn
+    request_templates = {
+    "application/json" = file("${path.module}/mapping_templates/Chat-Conversation-POST-Input.vtl")
+  }
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
 }
 
-resource "aws_api_gateway_model" "conversation" {
-  rest_api_id  = aws_api_gateway_rest_api.api.id
-  name         = "Conversation"
-  content_type = "application/json"
-  schema       = file("${path.module}/models/Conversation.json")
-}
 
-resource "aws_api_gateway_model" "new_message" {
-  rest_api_id  = aws_api_gateway_rest_api.api.id
-  name         = "NewMessage"
-  content_type = "application/json"
-  schema       = file("${path.module}/models/NewMessage.json")
-}
 
-resource "aws_api_gateway_model" "user_get" {
-  rest_api_id  = aws_api_gateway_rest_api.api.id
-  name         = "UserList"
-  content_type = "application/json"
-  schema       = file("${path.module}/models/UserList.json")
-}
 
 resource "aws_api_gateway_method_response" "method_response_200" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -263,6 +310,32 @@ resource "aws_api_gateway_integration_response" "integration_response_204_id_pos
 }
 
 
+resource "aws_api_gateway_method_response" "method_response_200_conversations_post" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.conversations_api.id
+  http_method = aws_api_gateway_method.post_conversations.http_method
+  status_code = "200"
+  response_models = {
+    "application/json" = aws_api_gateway_model.convo_id.name
+  }
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "integration_response_200_conversations_post" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.conversations_api.id
+  http_method = aws_api_gateway_method.post_conversations.http_method
+  status_code = aws_api_gateway_method_response.method_response_200_conversations_post.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+
+
 
 
 
@@ -292,7 +365,7 @@ resource "aws_api_gateway_integration_response" "cors_integration_response" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
@@ -341,7 +414,7 @@ resource "aws_api_gateway_integration_response" "cors_integration_response_id" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
@@ -391,7 +464,7 @@ resource "aws_api_gateway_integration_response" "cors_users_integration_response
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
@@ -412,3 +485,5 @@ resource "aws_api_gateway_method_response" "cors_users_method_response" {
     "method.response.header.Access-Control-Allow-Origin"  = true
   }
 }
+
+
