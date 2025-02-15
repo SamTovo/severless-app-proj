@@ -285,35 +285,10 @@ resource "aws_api_gateway_integration_response" "integration_response_200_id_get
 }
 
 
-resource "aws_api_gateway_method_response" "method_response_204_id_post" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.conversations_id_api.id
-  http_method = aws_api_gateway_method.post_ids.http_method
-  status_code = "204"
-  response_models = {
-    "application/json" = aws_api_gateway_model.new_message.name
-  }
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true
-  }
-}
-
-resource "aws_api_gateway_integration_response" "integration_response_204_id_post" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.conversations_id_api.id
-  http_method = aws_api_gateway_method.post_ids.http_method
-  status_code = aws_api_gateway_method_response.method_response_204_id_post.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'*'"
-  }
-}
-
-
-resource "aws_api_gateway_method_response" "method_response_200_conversations_post" {
+resource "aws_api_gateway_method_response" "method_response_200_id_post" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.conversations_api.id
-  http_method = aws_api_gateway_method.post_conversations.http_method
+  http_method = aws_api_gateway_method.post_ids.http_method
   status_code = "200"
   response_models = {
     "application/json" = aws_api_gateway_model.convo_id.name
@@ -323,11 +298,11 @@ resource "aws_api_gateway_method_response" "method_response_200_conversations_po
   }
 }
 
-resource "aws_api_gateway_integration_response" "integration_response_200_conversations_post" {
+resource "aws_api_gateway_integration_response" "integration_response_200_id_post" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.conversations_api.id
-  http_method = aws_api_gateway_method.post_conversations.http_method
-  status_code = aws_api_gateway_method_response.method_response_200_conversations_post.status_code
+  http_method = aws_api_gateway_method.post_ids.http_method
+  status_code = aws_api_gateway_method_response.method_response_200_id_post.status_code
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
@@ -364,9 +339,13 @@ resource "aws_api_gateway_integration_response" "cors_integration_response" {
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST'"
+    "method.response.header.Access-Control-Allow-Headers" = "'*'"
+    "method.response.header.Access-Control-Allow-Methods" = "'*'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  response_templates = {
+    "application/json" = "Empty"
   }
 }
 
@@ -464,7 +443,7 @@ resource "aws_api_gateway_integration_response" "cors_users_integration_response
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,POST'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
