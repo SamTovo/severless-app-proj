@@ -6,7 +6,7 @@ client = boto3.client('cognito-idp')
 def handler(event, context):
     paginator = client.get_paginator('list_users')
     response_iterator = paginator.paginate(
-        UserPoolId='us-east-1_S91ayFtUO',
+        UserPoolId='us-east-1_uftxmctjR',
         AttributesToGet=[],
         Filter='',
         PaginationConfig={'PageSize': 60}

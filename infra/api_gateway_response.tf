@@ -83,12 +83,13 @@ resource "aws_api_gateway_method_response" "method_response_200_id_post" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.conversations_api.id
   http_method = aws_api_gateway_method.post_ids.http_method
-  status_code = "204"
+  status_code = "200"
   response_models = {
     "application/json" = aws_api_gateway_model.convo_id.name
   }
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true
+    "method.response.header.Access-Control-Allow-Origin" = true,
+    
   }
 }
 
@@ -96,7 +97,7 @@ resource "aws_api_gateway_integration_response" "integration_response_200_id_pos
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.conversations_api.id
   http_method = aws_api_gateway_method.post_ids.http_method
-  status_code = aws_api_gateway_method_response.method_response_200_id_post.status_code
+  status_code = "200"
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = "'*'"

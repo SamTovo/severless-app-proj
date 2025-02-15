@@ -5,7 +5,7 @@ resource "aws_lambda_permission" "api_gateway" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.chat_conversation_lambda_convo.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/conversations"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:z1wxpoy7mf/*/GET/conversations"
 }
 
 
@@ -14,7 +14,7 @@ resource "aws_lambda_permission" "api_gateway_post" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.chat_conversation_lambda_convo_post.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/POST/conversations"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:z1wxpoy7mf/*/POST/conversations"
 }
 
 
@@ -24,7 +24,7 @@ resource "aws_lambda_permission" "api_gateway_get_ids" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.chat_messages_get.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/conversations/{id}"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:z1wxpoy7mf/*/GET/conversations/{id}"
 }
 
 resource "aws_lambda_permission" "api_gateway_post_ids" {
@@ -32,7 +32,7 @@ resource "aws_lambda_permission" "api_gateway_post_ids" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.messages_post_lambda.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/POST/conversations/{id}"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:z1wxpoy7mf/*/POST/conversations/{id}"
 }
 
 resource "aws_lambda_permission" "api_gateway_users_get" {
@@ -40,5 +40,5 @@ resource "aws_lambda_permission" "api_gateway_users_get" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.user_get_lambda.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:3d346uvk7h/*/GET/users"
+  source_arn    = "arn:aws:execute-api:us-east-1:311141525611:z1wxpoy7mf/*/GET/users"
 }
